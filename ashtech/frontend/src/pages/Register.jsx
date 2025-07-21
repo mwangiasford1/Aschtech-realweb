@@ -25,7 +25,7 @@ export default function Register() {
     setSuccess('');
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/register', { username, email, password });
+      await axios.post('/api/auth/register', { username, email, password });
       setSuccess('Registration successful! You can now log in.');
       showSnackbar('Registration successful! You can now log in.', 'success');
       setTimeout(() => navigate('/login'), 1500);

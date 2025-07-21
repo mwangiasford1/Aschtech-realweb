@@ -8,7 +8,7 @@ export function SocketProvider({ children }) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000', {
+    const newSocket = io('https://aschtech-backend.onrender.com', {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,

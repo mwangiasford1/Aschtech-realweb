@@ -32,7 +32,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const res = await axios.post('/api/auth/login', { email, password });
       if (res.data.require2FA) {
         setTwoFAUserId(res.data.userId);
         setShow2FA(true);
@@ -56,7 +56,7 @@ export default function Login() {
   const handle2FAVerify = async () => {
     setVerifying2FA(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/2fa/verify', { userId: twoFAUserId, code: twoFACode });
+      const res = await axios.post('/api/auth/2fa/verify', { userId: twoFAUserId, code: twoFACode });
       // Fetch full profile after 2FA login
       const profileRes = await axios.get('/api/users/me', {
         headers: { Authorization: `Bearer ${res.data.token}` }
