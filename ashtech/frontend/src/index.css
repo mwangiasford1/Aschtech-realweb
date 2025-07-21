@@ -1,0 +1,11 @@
+body {
+  min-height: 100vh;
+  min-width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-image: url("https://cdn.leonardo.ai/users/1fab88cf-561d-436b-8728-8fe2f04717f3/generations/304894e0-a445-48c1-813c-d4ab42054f96/GPT_Image_1_remove_content_and_leave_the_colors_0.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+} 
