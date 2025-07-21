@@ -19,4 +19,12 @@ axios.interceptors.request.use(
   }
 );
 
-export default axios; 
+// Example for axios.js
+import axios from 'axios';
+
+const instance = axios.create({
+  baseURL: 'https://aschtech-backend.onrender.com', // <-- Use your Render backend URL
+  // ...other config
+});
+
+export default instance; 

@@ -129,7 +129,7 @@ export default function Dashboard() {
               <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>Recent Notifications</Typography>
               <ul style={{ paddingLeft: 18, margin: 0 }}>
                 {notifications.slice(0, 3).map((n, i) => (
-                  <li key={n.id || i}>{n.message}</li>
+                  <li key={n.id || n._id || i}>{n.message}</li>
                 ))}
                 {notifications.length === 0 && <li>No notifications yet.</li>}
               </ul>

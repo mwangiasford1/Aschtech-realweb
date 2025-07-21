@@ -7,7 +7,7 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Not authorized' });
   try {
-    const logs = await AuditLog.findAll({ order: [['createdAt', 'DESC']] });
+    const logs = await AuditLog.find().sort({ createdAt: -1 });
     res.json(logs);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch audit logs', error: err.message });

@@ -41,6 +41,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import PaletteIcon from '@mui/icons-material/Palette';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import dayjs from 'dayjs';
+import CircularProgress from '@mui/material/CircularProgress';
 
 export default function Profile() {
   const { user, setUser } = useContext(AuthContext);
@@ -227,19 +228,33 @@ export default function Profile() {
         <CardContent>
           <Typography variant="h5" sx={sectionHeaderSx}>Profile</Typography>
           <Divider sx={{ mb: 2 }} />
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+          {/* Profile Info Section */}
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, mt: 2 }}>Profile Info</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, position: 'relative' }}>
             <Avatar
               src={preview ? (preview.startsWith('data:') || preview.startsWith('blob:') ? preview : `data:image/*;base64,${preview}`) : '/default-avatar.png'}
               alt="Profile"
               sx={{ width: 100, height: 100, mr: 3, boxShadow: 2, border: '3px solid #fff', bgcolor: '#1976d2', fontSize: 40 }}
             />
+            <IconButton
+              component="label"
+              sx={{ position: 'absolute', left: 70, top: 70, bgcolor: '#fff', boxShadow: 2, '&:hover': { bgcolor: '#eee' } }}
+              size="small"
+            >
+              <PhotoCameraIcon fontSize="small" />
+              <input type="file" accept="image/*" hidden onChange={handleImageChange} />
+            </IconButton>
+            {preview && (
+              <Button size="small" color="error" onClick={() => { setImage(null); setPreview(''); }} sx={{ ml: 2 }}>
+                Remove
+              </Button>
+            )}
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>{form.username}</Typography>
               <Typography color="text.secondary">{form.email}</Typography>
             </Box>
           </Box>
           <form onSubmit={handleSubmit}>
-            {/* All profile fields, styled with modern spacing and fullWidth */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
               <TextField name="username" label="Username" value={form.username} onChange={handleChange} fullWidth />
               <TextField name="email" label="Email" value={form.email} onChange={handleChange} fullWidth />
@@ -266,23 +281,62 @@ export default function Profile() {
                 <MenuItem value="other">Other</MenuItem>
                 <MenuItem value="prefer_not_to_say">Prefer not to say</MenuItem>
               </TextField>
+            </Box>
+            {/* Security Section */}
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, mt: 3 }}>Security</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <LockIcon sx={{ mr: 1, color: twoFAEnabled ? 'success.main' : 'warning.main' }} />
+              <Typography variant="body2" sx={{ mr: 1 }}>{twoFAEnabled ? '2FA Enabled' : '2FA Disabled'}</Typography>
+              <Switch checked={twoFAEnabled} onChange={handleTwoFASwitch} color="primary" />
+            </Box>
+            {/* Social Links Section */}
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, mt: 3 }}>Social Links</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
               <TextField name="github" label="GitHub URL" value={form.github} onChange={handleChange} fullWidth InputProps={{ startAdornment: <InputAdornment position="start"><GitHubIcon sx={{ color: '#333' }} /></InputAdornment> }} />
               <TextField name="twitter" label="Twitter URL" value={form.twitter} onChange={handleChange} fullWidth InputProps={{ startAdornment: <InputAdornment position="start"><TwitterIcon sx={{ color: '#1da1f2' }} /></InputAdornment> }} />
               <TextField name="linkedin" label="LinkedIn URL" value={form.linkedin} onChange={handleChange} fullWidth InputProps={{ startAdornment: <InputAdornment position="start"><LinkedInIcon sx={{ color: '#0077b5' }} /></InputAdornment> }} />
+            </Box>
+            {/* Personalization Section */}
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, mt: 3 }}>Personalization</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
               <TextField
                 label="Theme Color"
                 type="color"
                 value={color}
                 onChange={handleColorChange}
-                fullWidth
-                sx={{ width: 120, mt: 1 }}
+                sx={{ width: 120 }}
                 InputLabelProps={{ shrink: true }}
               />
+              <Button variant="outlined" onClick={handleThemeToggle} sx={{ ml: 2 }}>{theme === 'light' ? 'Switch to Dark' : 'Switch to Light'}</Button>
             </Box>
+            {/* Account Actions Section */}
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, mt: 3, color: 'error.main' }}>Account Actions</Typography>
+            <Button variant="outlined" color="error" onClick={() => setShowDeleteDialog(true)} sx={{ mb: 2 }}>Delete Account</Button>
             <Button type="submit" variant="contained" color="primary" sx={{ mt: 2, fontWeight: 700, borderRadius: 3, boxShadow: 2, px: 4, py: 1.5 }}>
               Save Changes
             </Button>
           </form>
+          <Dialog open={show2FADialog} onClose={() => setShow2FADialog(false)}>
+            <DialogTitle>Enable Two-Factor Authentication</DialogTitle>
+            <DialogContent>
+              <Typography sx={{ mb: 2 }}>Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.), then enter the 6-digit code below to verify.</Typography>
+              {qr && <img src={qr} alt="2FA QR" style={{ display: 'block', margin: '0 auto 16px auto', height: 180 }} />}
+              <TextField
+                label="6-digit code"
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                fullWidth
+                margin="normal"
+                inputProps={{ maxLength: 6 }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setShow2FADialog(false)} disabled={verifying}>Cancel</Button>
+              <Button onClick={handleVerify2FA} color="primary" disabled={verifying || !code.trim()}>
+                {verifying ? <CircularProgress size={20} /> : 'Verify'}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </CardContent>
       </Card>
     </Box>

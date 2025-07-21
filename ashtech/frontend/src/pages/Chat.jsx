@@ -19,11 +19,11 @@ function Chat() {
 
   useEffect(() => {
     if (!socket || !user) return;
-    socket.emit('register', user.id); // Register this user's socket
+    socket.emit('register', user._id || user.id); // Register this user's socket
 
     const handlePrivateMessage = (msg) => {
       // Only show messages where this user is sender or recipient
-      if (msg.from === user.id || msg.to === user.id) {
+      if (msg.from === (user._id || user.id) || msg.to === (user._id || user.id)) {
         setMessages((prev) => [...prev, msg]);
       }
     };
@@ -41,7 +41,7 @@ function Chat() {
     e.preventDefault();
     if (!input.trim() || !user) return;
     const msg = {
-      from: user.id,
+      from: user._id || user.id,
       to: DEMO_RECIPIENT_ID, // Replace with selected recipient
       text: input,
       time: new Date().toLocaleTimeString()

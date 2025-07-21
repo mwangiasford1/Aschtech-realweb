@@ -354,7 +354,7 @@ function Questions() {
   };
 
   // Filter questions to only show those belonging to the current user
-  const myQuestions = user ? questions.filter(q => q.authorUser && (q.authorUser.id === user.id || q.authorUser._id === user.id || q.authorUser._id === user._id || q.authorUser.id === user._id)) : [];
+  const myQuestions = user ? questions.filter(q => q.authorUser && (q.authorUser._id === user._id || q.authorUser.id === user._id || q.authorUser._id === user.id || q.authorUser.id === user.id)) : [];
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)', py: 4 }}>

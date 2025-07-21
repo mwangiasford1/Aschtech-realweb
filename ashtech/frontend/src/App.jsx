@@ -27,6 +27,13 @@ import IconButton from '@mui/material/IconButton';
 import { useNotifications } from './context/NotificationContext.jsx';
 import Avatar from '@mui/material/Avatar';
 import BookAppointment from './pages/BookAppointment.jsx';
+import MenuIcon from '@mui/icons-material/Menu';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 function Home() {
   return (
@@ -55,7 +62,7 @@ function Home() {
       <img
         src="https://cdn.leonardo.ai/users/1fab88cf-561d-436b-8728-8fe2f04717f3/generations/852b967e-107f-4ade-916e-453c4247cfea/Leonardo_Lightning_XL_create_a_logo_titled_ASHTECH_DESIGNS_w_1.jpg?w=512"
         alt="AshTech Logo"
-        style={{ display: 'block', margin: '0 auto 32px auto', height: 100, borderRadius: 14, background: '#fff' }}
+        style={{ display: 'block', margin: '0 auto 32px auto', height: 200, borderRadius: '50%', background: '#fff' }}
       />
       <h1>Welcome to ASHTECH!</h1>
       <p style={{ fontSize: '1.5rem', maxWidth: 600, textAlign: 'center' }}>
@@ -69,57 +76,103 @@ function App() {
   const { user, logout } = useContext(AuthContext);
   const { notifications, unread, markAllRead } = useNotifications();
   const [notifOpen, setNotifOpen] = React.useState(false);
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+  const navLinks = [
+    { label: 'Home', to: '/' },
+    { label: 'Dashboard', to: '/dashboard' },
+    { label: 'Profile', to: '/profile' },
+    { label: 'Tutorials', to: '/tutorials' },
+    { label: 'Q&A', to: '/questions' },
+    ...(user ? [{ label: 'Book Appointment', to: '/book-appointment' }] : []),
+    ...(user && user.role === 'admin' ? [{ label: 'Admin', to: '/admin' }] : []),
+  ];
   return (
     <>
       <AppBar position="sticky">
         <Toolbar>
-          {user && (
-            <Avatar
-              src={user.profileImage ? (user.profileImage.startsWith('http') ? user.profileImage : `data:image/*;base64,${user.profileImage}`) : undefined}
-              alt={user.username}
-              sx={{ width: 40, height: 40, mr: 2, bgcolor: '#1976d2', border: '2px solid #fff', objectFit: 'cover' }}
-            >
-              {!user.profileImage && user.username ? user.username[0].toUpperCase() : ''}
-            </Avatar>
+          {isSmall && (
+            <IconButton color="inherit" edge="start" onClick={() => setDrawerOpen(true)} sx={{ mr: 2 }}>
+              <MenuIcon />
+            </IconButton>
           )}
-          <Button color="inherit" component={RouterLink} to="/">Home</Button>
-          <Button color="inherit" component={RouterLink} to="/dashboard">Dashboard</Button>
-          <Button color="inherit" component={RouterLink} to="/profile">Profile</Button>
-          <Button color="inherit" component={RouterLink} to="/tutorials">Tutorials</Button>
-          <Button color="inherit" component={RouterLink} to="/questions">Q&A</Button>
-          {user && (
-            <Button color="inherit" component={RouterLink} to="/book-appointment">Book Appointment</Button>
-          )}
-          {user && user.role === 'admin' && (
-            <Button color="inherit" component={RouterLink} to="/admin">Admin</Button>
+          {/* Logo on far left */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+            <img
+              src="https://cdn.leonardo.ai/users/1fab88cf-561d-436b-8728-8fe2f04717f3/generations/852b967e-107f-4ade-916e-453c4247cfea/Leonardo_Lightning_XL_create_a_logo_titled_ASHTECH_DESIGNS_w_1.jpg?w=512"
+              alt="AshTech Logo"
+              style={{ height: 80, width: 'auto', borderRadius: 8, background: '#fff' }}
+            />
+          </Box>
+          {/* Nav links (desktop only) */}
+          {!isSmall && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {navLinks.map(link => (
+                <Button key={link.to} color="inherit" component={RouterLink} to={link.to} sx={{ fontWeight: 600 }}>
+                  {link.label}
+                </Button>
+              ))}
+            </Box>
           )}
           <Box sx={{ flexGrow: 1 }} />
+          {/* Right side: notification, welcome, avatar/logout */}
           {user && (
-            <>
-              <IconButton color="inherit" onClick={() => { setNotifOpen(true); markAllRead(); }} sx={{ mr: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton color="inherit" onClick={() => { setNotifOpen(true); markAllRead(); }}>
                 <Badge badgeContent={unread} color="error">
                   <NotificationsIcon />
                 </Badge>
               </IconButton>
-              <Typography variant="body1" sx={{ mr: 2 }}>Welcome, {user.username}!</Typography>
+              {!isSmall && (
+                <Typography variant="body1" sx={{ mx: 1 }}>Welcome, {user.username}!</Typography>
+              )}
               <Button color="inherit" onClick={logout}>Logout</Button>
-            </>
+              {!isSmall && (
+                <Avatar
+                  src={user.profileImage ? (user.profileImage.startsWith('http') ? user.profileImage : `data:image/*;base64,${user.profileImage}`) : undefined}
+                  alt={user.username}
+                  sx={{ width: 40, height: 40, ml: 1, bgcolor: '#1976d2', border: '2px solid #fff', objectFit: 'cover' }}
+                >
+                  {!user.profileImage && user.username ? user.username[0].toUpperCase() : ''}
+                </Avatar>
+              )}
+            </Box>
           )}
-          {!user && (
-            <>
+          {!user && !isSmall && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Button color="inherit" component={RouterLink} to="/login">Login</Button>
               <Button color="inherit" component={RouterLink} to="/register">Register</Button>
-            </>
+            </Box>
           )}
-          <Box sx={{ flexGrow: 0, ml: 2, display: 'flex', alignItems: 'center' }}>
-            <img
-              src="https://cdn.leonardo.ai/users/1fab88cf-561d-436b-8728-8fe2f04717f3/generations/852b967e-107f-4ade-916e-453c4247cfea/Leonardo_Lightning_XL_create_a_logo_titled_ASHTECH_DESIGNS_w_1.jpg?w=512"
-              alt="AshTech Logo"
-              style={{ height: 40, width: 'auto', borderRadius: 8, background: '#fff' }}
-            />
-          </Box>
         </Toolbar>
       </AppBar>
+      <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <Box sx={{ width: 220 }} role="presentation" onClick={() => setDrawerOpen(false)}>
+          <List>
+            {navLinks.map(link => (
+              <ListItem button key={link.to} component={RouterLink} to={link.to}>
+                <ListItemText primary={link.label} />
+              </ListItem>
+            ))}
+            {!user && (
+              <>
+                <ListItem button component={RouterLink} to="/login">
+                  <ListItemText primary="Login" />
+                </ListItem>
+                <ListItem button component={RouterLink} to="/register">
+                  <ListItemText primary="Register" />
+                </ListItem>
+              </>
+            )}
+            {user && (
+              <ListItem button onClick={logout}>
+                <ListItemText primary="Logout" />
+              </ListItem>
+            )}
+          </List>
+        </Box>
+      </Drawer>
       <Dialog open={notifOpen} onClose={() => setNotifOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Notifications</DialogTitle>
         <DialogContent>

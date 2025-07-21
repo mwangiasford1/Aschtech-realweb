@@ -234,14 +234,15 @@ export default function AdminDashboard() {
     if (!actionUser || !actionType) return;
     setProcessing(true);
     try {
+      const userId = actionUser._id || actionUser.id;
       if (actionType === 'promote') {
-        await axios.put(`/api/users/${actionUser.id}/promote`);
+        await axios.put(`/api/users/${userId}/promote`);
         showSnackbar('User promoted to admin!', 'success');
       } else if (actionType === 'demote') {
-        await axios.put(`/api/users/${actionUser.id}/demote`);
+        await axios.put(`/api/users/${userId}/demote`);
         showSnackbar('User demoted to regular user.', 'success');
       } else if (actionType === 'delete') {
-        await axios.delete(`/api/users/${actionUser.id}`);
+        await axios.delete(`/api/users/${userId}`);
         showSnackbar('User deleted.', 'success');
       }
       setActionUser(null);
@@ -439,6 +440,13 @@ export default function AdminDashboard() {
     // eslint-disable-next-line
   }, [sidebarSection]);
 
+  useEffect(() => {
+    if (sidebarSection === 'analytics') {
+      fetchAnalytics();
+    }
+    // eslint-disable-next-line
+  }, [onlineUserIds]);
+
   const fetchAppointments = async () => {
     setAppointmentsLoading(true);
     setAppointmentsError('');
@@ -570,10 +578,10 @@ export default function AdminDashboard() {
         );
       case 'users':
         return (
-          <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '80vh', justifyContent: 'center', bgcolor: 'rgba(245,247,250,0.7)' }}>
-            <Card sx={{ width: '100%', maxWidth: 1200, boxShadow: 4, borderRadius: 4, p: 2, mb: 4 }}>
+          <Box sx={{ p: 3, pl: 0, ml: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minHeight: '80vh', justifyContent: 'center', bgcolor: 'rgba(245,247,250,0.7)' }}>
+            <Card sx={{ width: '100%', boxShadow: 4, borderRadius: 4, p: 2, mb: 4, ml: 0 }}>
               <CardContent>
-                <Typography variant="h5" align="center" mb={3} sx={{ fontWeight: 700, letterSpacing: 1 }}>
+                <Typography variant="h5" align="left" mb={3} sx={{ fontWeight: 700, letterSpacing: 1 }}>
                   User Management
                 </Typography>
                 {usersLoading ? (
@@ -858,7 +866,7 @@ export default function AdminDashboard() {
                             <Button
                               size="small"
                               color="primary"
-                              onClick={() => handleOpenAnswerDialog(question.id)}
+                              onClick={() => handleOpenAnswerDialog(question._id || question.id)}
                             >
                               Answer
                             </Button>
@@ -866,7 +874,7 @@ export default function AdminDashboard() {
                           <Button
                             size="small"
                             color="error"
-                            onClick={() => setDeleteQuestionId(question.id)}
+                            onClick={() => setDeleteQuestionId(question._id || question.id)}
                           >
                             Delete
                           </Button>
@@ -1135,7 +1143,7 @@ export default function AdminDashboard() {
         </List>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 0, minHeight: '100vh', bgcolor: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
-        <Box sx={{ maxWidth: 1400, mx: 'auto', p: { xs: 2, md: 4 } }}>
+        <Box sx={{ width: '100%', minHeight: '100vh', p: { xs: 2, md: 4 } }}>
           {renderContent()}
         </Box>
       </Box>
