@@ -601,7 +601,7 @@ export default function AdminDashboard() {
                       </TableHead>
                       <TableBody>
                         {users.map(u => (
-                          <TableRow key={u.id} hover sx={{ transition: 'background 0.2s', '&:hover': { background: 'rgba(25, 118, 210, 0.07)' } }}>
+                          <TableRow key={u._id || u.id} hover sx={{ transition: 'background 0.2s', '&:hover': { background: 'rgba(25, 118, 210, 0.07)' } }}>
                             <TableCell style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{u.username}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{u.email}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap', color: u.role === 'admin' ? '#1976d2' : '#333', fontWeight: u.role === 'admin' ? 600 : 400 }}>{u.role}</TableCell>
@@ -779,7 +779,7 @@ export default function AdminDashboard() {
                   </TableHead>
                   <TableBody>
                     {tutorials.map(tutorial => (
-                      <TableRow key={tutorial.id}>
+                      <TableRow key={tutorial._id || tutorial.id}>
                         <TableCell>
                           {tutorial.thumbnail && (
                             <img
@@ -847,7 +847,7 @@ export default function AdminDashboard() {
                   </TableHead>
                   <TableBody>
                     {questions.map(question => (
-                      <TableRow key={question.id}>
+                      <TableRow key={question._id || question.id}>
                         <TableCell>{question.title}</TableCell>
                         <TableCell>{question.author?.username || 'Unknown'}</TableCell>
                         <TableCell>
@@ -1030,7 +1030,7 @@ export default function AdminDashboard() {
                   </TableHead>
                   <TableBody>
                     {appointments.map((appt) => (
-                      <TableRow key={appt.id}>
+                      <TableRow key={appt._id || appt.id}>
                         <TableCell>{appt.name}</TableCell>
                         <TableCell>{appt.email}</TableCell>
                         <TableCell>{new Date(appt.datetime).toLocaleString()}</TableCell>

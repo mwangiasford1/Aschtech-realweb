@@ -173,16 +173,16 @@ export default function Dashboard() {
           </Typography>
           <Typography sx={{ mb: 2 }}>
             <b>What we do:</b> <br/>
-            <ul style={{ margin: 0, paddingLeft: 20 }}>
-              <li>⚡ Full-stack web development (React, Node.js, MySQL, MongoDB, Express)</li>
-              <li>🎨 UI/UX design and prototyping</li>
-              <li>🔗 API integration and backend engineering</li>
-              <li>💬 Real-time chat, notifications, and collaboration tools</li>
-              <li>📱 Responsive, mobile-first design</li>
-              <li>🛡️ Security, authentication, and 2FA</li>
-              <li>📊 Analytics dashboards and admin panels</li>
-            </ul>
           </Typography>
+          <ul style={{ margin: 0, paddingLeft: 20 }}>
+            <li>⚡ Full-stack web development (React, Node.js, MySQL, MongoDB, Express)</li>
+            <li>🎨 UI/UX design and prototyping</li>
+            <li>🔗 API integration and backend engineering</li>
+            <li>💬 Real-time chat, notifications, and collaboration tools</li>
+            <li>📱 Responsive, mobile-first design</li>
+            <li>🛡️ Security, authentication, and 2FA</li>
+            <li>📊 Analytics dashboards and admin panels</li>
+          </ul>
           <Typography variant="h6" sx={{ mt: 3, mb: 2, fontWeight: 700 }}>Current & Recent Projects</Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={4}>
