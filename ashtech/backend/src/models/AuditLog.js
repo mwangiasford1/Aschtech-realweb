@@ -1,14 +1,10 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../mysql');
+const mongoose = require('mongoose');
 
-const AuditLog = sequelize.define('AuditLog', {
-  action: { type: DataTypes.STRING, allowNull: false },
-  user: { type: DataTypes.STRING, allowNull: false },
-  target: { type: DataTypes.STRING },
-  details: { type: DataTypes.STRING },
-  createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
-}, {
-  timestamps: false
-});
+const auditLogSchema = new mongoose.Schema({
+  action: { type: String, required: true },
+  user: { type: String, required: true },
+  target: { type: String },
+  details: { type: String },
+}, { timestamps: true });
 
-module.exports = AuditLog; 
+module.exports = mongoose.model('AuditLog', auditLogSchema); 

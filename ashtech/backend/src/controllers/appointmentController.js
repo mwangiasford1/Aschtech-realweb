@@ -7,7 +7,8 @@ exports.createAppointment = async (req, res) => {
     if (!name || !email || !datetime) {
       return res.status(400).json({ message: 'Name, email, and datetime are required.' });
     }
-    const appointment = await Appointment.create({ name, email, datetime, message });
+    const appointment = new Appointment({ name, email, datetime, message });
+    await appointment.save();
     res.status(201).json(appointment);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create appointment', error: err.message });
@@ -20,7 +21,7 @@ exports.listAppointments = async (req, res) => {
     return res.status(403).json({ message: 'Not authorized' });
   }
   try {
-    const appointments = await Appointment.findAll({ order: [['createdAt', 'DESC']] });
+    const appointments = await Appointment.find().sort({ createdAt: -1 });
     res.json(appointments);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch appointments', error: err.message });

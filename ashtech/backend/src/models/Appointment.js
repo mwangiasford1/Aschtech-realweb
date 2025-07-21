@@ -1,14 +1,10 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../mysql');
+const mongoose = require('mongoose');
 
-const Appointment = sequelize.define('Appointment', {
-  name: { type: DataTypes.STRING, allowNull: false },
-  email: { type: DataTypes.STRING, allowNull: false },
-  datetime: { type: DataTypes.DATE, allowNull: false },
-  message: { type: DataTypes.TEXT, allowNull: true },
-  createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-}, {
-  timestamps: false
-});
+const appointmentSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  datetime: { type: Date, required: true },
+  message: { type: String },
+}, { timestamps: true });
 
-module.exports = Appointment; 
+module.exports = mongoose.model('Appointment', appointmentSchema); 

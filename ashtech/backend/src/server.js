@@ -1,8 +1,9 @@
 const app = require('./app');
 const http = require('http');
 const { Server } = require('socket.io');
-const sequelize = require('./mysql');
-const User = require('./models/User');
+const connectDB = require('./mongo');
+// const sequelize = require('./mysql'); // REMOVE
+// const User = require('./models/User'); // REMOVE
 
 const PORT = process.env.PORT || 5000;
 
@@ -62,13 +63,11 @@ io.on('connection', (socket) => {
   });
 });
 
-sequelize.sync({ alter: true }).then(() => {
-  console.log('MySQL tables synced');
+// Connect to MongoDB and start server
+connectDB().then(() => {
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
-}).catch((err) => {
-  console.error('MySQL connection error:', err);
 });
 
 module.exports = { io }; 

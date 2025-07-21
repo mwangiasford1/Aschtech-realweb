@@ -1,7 +1,6 @@
 const Question = require('../models/Question');
 const Answer = require('../models/Answer');
 const AuditLog = require('../models/AuditLog');
-const { Op } = require('sequelize');
 const User = require('../models/User');
 const path = require('path');
 const fs = require('fs');
@@ -11,33 +10,28 @@ exports.listQuestions = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
     const search = req.query.search || '';
     const tags = req.query.tags ? req.query.tags.split(',') : [];
-    const where = {};
+    const filter = {};
     if (search) {
-      where[Op.or] = [
-        { title: { [Op.like]: `%${search}%` } },
-        { body: { [Op.like]: `%${search}%` } }
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { body: { $regex: search, $options: 'i' } }
       ];
     }
     if (tags.length > 0) {
-      where.tags = { [Op.or]: tags.map(tag => ({ [Op.like]: `%${tag}%` })) };
+      filter.tags = { $in: tags };
     }
-    // Only show user's own questions unless admin
     if (req.user && req.user.role !== 'admin') {
-      where.author = req.user.id;
+      filter.author = req.user._id;
     }
-    const { rows: questions, count: total } = await Question.findAndCountAll({
-      where,
-      limit,
-      offset,
-      order: [['createdAt', 'DESC']],
-      include: [
-        { model: Answer, as: 'answers', include: [{ model: User, as: 'authorUser', attributes: ['username', 'email'] }] },
-        { model: User, as: 'authorUser', attributes: ['username', 'email'] }
-      ]
-    });
+    const total = await Question.countDocuments(filter);
+    const questions = await Question.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate('author', 'username email')
+      .populate({ path: 'answers', populate: { path: 'author', select: 'username email' } });
     res.json({ questions, total });
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch questions', error: err.message });
@@ -47,12 +41,9 @@ exports.listQuestions = async (req, res) => {
 // Get a single question by ID
 exports.getQuestion = async (req, res) => {
   try {
-    const question = await Question.findByPk(req.params.id, {
-      include: [
-        { model: Answer, as: 'answers', include: [{ model: User, as: 'authorUser', attributes: ['username', 'email'] }] },
-        { model: User, as: 'authorUser', attributes: ['username', 'email'] }
-      ]
-    });
+    const question = await Question.findById(req.params.id)
+      .populate('author', 'username email')
+      .populate({ path: 'answers', populate: { path: 'author', select: 'username email' } });
     if (!question) return res.status(404).json({ message: 'Question not found' });
     res.json(question);
   } catch (err) {
@@ -74,13 +65,15 @@ exports.createQuestion = async (req, res) => {
       fs.writeFileSync(filePath, req.file.buffer);
       imagePath = `uploads/${filename}`;
     }
-    const question = await Question.create({
+    const question = new Question({
       title,
       body,
-      tags: Array.isArray(tags) ? tags.join(',') : tags,
-      author: req.user.id,
+      tags: Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()) : []),
+      author: req.user._id,
       image: imagePath,
+      answers: []
     });
+    await question.save();
     res.status(201).json(question);
   } catch (err) {
     console.error('Create question error:', err);
@@ -93,20 +86,23 @@ exports.addAnswer = async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Only admins can answer questions.' });
     const { body } = req.body;
-    const question = await Question.findByPk(req.params.id);
+    const question = await Question.findById(req.params.id);
     if (!question) return res.status(404).json({ message: 'Question not found' });
     // Only allow one answer per question
-    let answer = await Answer.findOne({ where: { questionId: question.id } });
+    let answer = await Answer.findOne({ questionId: question._id });
     if (answer) {
       answer.body = body;
-      answer.author = req.user.id;
+      answer.author = req.user._id;
       await answer.save();
     } else {
-      answer = await Answer.create({
+      answer = new Answer({
         body,
-        author: req.user.id,
-        questionId: question.id
+        author: req.user._id,
+        questionId: question._id
       });
+      await answer.save();
+      question.answers.push(answer._id);
+      await question.save();
     }
     res.status(201).json(answer);
   } catch (err) {
@@ -117,9 +113,9 @@ exports.addAnswer = async (req, res) => {
 // Delete a question
 exports.deleteQuestion = async (req, res) => {
   try {
-    const question = await Question.findByPk(req.params.id);
+    const question = await Question.findById(req.params.id);
     if (!question) return res.status(404).json({ message: 'Question not found' });
-    if (question.author !== req.user.id && req.user.role !== 'admin') {
+    if (String(question.author) !== String(req.user._id) && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized' });
     }
     // Delete image file if exists
@@ -129,8 +125,10 @@ exports.deleteQuestion = async (req, res) => {
         fs.unlinkSync(imagePath);
       }
     }
-    await question.destroy();
-    await AuditLog.create({ action: 'delete_question', user: String(req.user.id), target: String(question.id), details: `Deleted question ${question.title}` });
+    // Delete all answers for this question
+    await Answer.deleteMany({ questionId: question._id });
+    await question.deleteOne();
+    await AuditLog.create({ action: 'delete_question', user: String(req.user._id), target: String(question._id), details: `Deleted question ${question.title}` });
     res.json({ message: 'Question deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete question', error: err.message });
@@ -140,13 +138,18 @@ exports.deleteQuestion = async (req, res) => {
 // Delete an answer
 exports.deleteAnswer = async (req, res) => {
   try {
-    const answer = await Answer.findByPk(req.params.answerId);
+    const answer = await Answer.findById(req.params.answerId);
     if (!answer) return res.status(404).json({ message: 'Answer not found' });
-    if (answer.author !== req.user.id && req.user.role !== 'admin') {
+    if (String(answer.author) !== String(req.user._id) && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized' });
     }
-    await answer.destroy();
-    await AuditLog.create({ action: 'delete_answer', user: String(req.user.id), target: String(answer.id), details: `Deleted answer from question ${answer.questionId}` });
+    // Remove answer reference from question
+    await Question.updateOne(
+      { _id: answer.questionId },
+      { $pull: { answers: answer._id } }
+    );
+    await answer.deleteOne();
+    await AuditLog.create({ action: 'delete_answer', user: String(req.user._id), target: String(answer._id), details: `Deleted answer from question ${answer.questionId}` });
     res.json({ message: 'Answer deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete answer', error: err.message });
@@ -156,10 +159,10 @@ exports.deleteAnswer = async (req, res) => {
 // Get all unique tags
 exports.getTags = async (req, res) => {
   try {
-    const questions = await Question.findAll();
+    const questions = await Question.find({}, 'tags');
     const tagsSet = new Set();
     questions.forEach(q => {
-      (q.tags || '').split(',').map(t => t.trim()).filter(Boolean).forEach(t => tagsSet.add(t));
+      (q.tags || []).forEach(t => tagsSet.add(t));
     });
     res.json(Array.from(tagsSet));
   } catch (err) {

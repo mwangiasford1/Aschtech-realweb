@@ -14,10 +14,7 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    // For multipart/form-data, use req.body for text fields and req.files for images
     let { username, email, password, bio, phone, location, birthday, gender, github, twitter, linkedin } = req.body;
-    console.log('updateProfile req.file:', req.file);
-    console.log('updateProfile req.body.profileImage:', req.body.profileImage);
     if (req.files && req.files.profileImage && req.files.profileImage[0]) {
       req.user.profileImage = req.files.profileImage[0].buffer.toString('base64');
     }
@@ -45,60 +42,60 @@ exports.updateProfile = async (req, res) => {
 // Admin: List all users
 exports.listUsers = async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Not authorized' });
-  const users = await User.findAll({ attributes: { exclude: ['password'] } });
+  const users = await User.find({}, { password: 0 });
   res.json(users);
 };
 
 // Admin: Promote user to admin
 exports.promoteUser = async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Not authorized' });
-  const user = await User.findByPk(req.params.id);
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ message: 'User not found' });
   user.role = 'admin';
   await user.save();
-  await AuditLog.create({ action: 'promote_user', user: String(req.user._id || req.user.id), target: String(user.id), details: `Promoted user ${user.username}` });
+  await AuditLog.create({ action: 'promote_user', user: String(req.user._id || req.user.id), target: String(user._id), details: `Promoted user ${user.username}` });
   res.json(user);
 };
 
 // Admin: Demote user to regular
 exports.demoteUser = async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Not authorized' });
-  const user = await User.findByPk(req.params.id);
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ message: 'User not found' });
   user.role = 'user';
   await user.save();
-  await AuditLog.create({ action: 'demote_user', user: String(req.user._id || req.user.id), target: String(user.id), details: `Demoted user ${user.username}` });
+  await AuditLog.create({ action: 'demote_user', user: String(req.user._id || req.user.id), target: String(user._id), details: `Demoted user ${user.username}` });
   res.json(user);
 };
 
 // Admin: Delete user
 exports.deleteUser = async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Not authorized' });
-  const user = await User.findByPk(req.params.id);
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ message: 'User not found' });
 
   // Delete all answers by this user
-  await Answer.destroy({ where: { author: user.id } });
+  await Answer.deleteMany({ author: user._id });
   // Delete all questions by this user
-  await Question.destroy({ where: { author: user.id } });
-  await Tutorial.destroy({ where: { author: user.id } });
+  await Question.deleteMany({ author: user._id });
+  await Tutorial.deleteMany({ author: user._id });
 
-  await user.destroy();
-  await AuditLog.create({ action: 'delete_user', user: String(req.user._id || req.user.id), target: String(user.id), details: `Deleted user ${user.username}` });
+  await user.deleteOne();
+  await AuditLog.create({ action: 'delete_user', user: String(req.user._id || req.user.id), target: String(user._id), details: `Deleted user ${user.username}` });
   res.json({ message: 'User deleted' });
 };
 
 // Admin: Update user details
 exports.updateUser = async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Not authorized' });
-  const user = await User.findByPk(req.params.id);
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ message: 'User not found' });
   const { username, email, role } = req.body;
   if (username) user.username = username;
   if (email) user.email = email;
   if (role) user.role = role;
   await user.save();
-  await AuditLog.create({ action: 'update_user', user: String(req.user._id || req.user.id), target: String(user.id), details: `Updated user ${user.username}` });
+  await AuditLog.create({ action: 'update_user', user: String(req.user._id || req.user.id), target: String(user._id), details: `Updated user ${user.username}` });
   res.json(user);
 };
 

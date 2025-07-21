@@ -1,15 +1,8 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../mysql');
-const User = require('./User');
+const mongoose = require('mongoose');
 
-const Notification = sequelize.define('Notification', {
-  message: { type: DataTypes.STRING, allowNull: false },
-  sender: { type: DataTypes.INTEGER, allowNull: true }, // user id
-  createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-}, {
-  timestamps: true
-});
+const notificationSchema = new mongoose.Schema({
+  message: { type: String, required: true },
+  sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+}, { timestamps: true });
 
-Notification.belongsTo(User, { foreignKey: 'sender', as: 'senderUser' });
-
-module.exports = Notification; 
+module.exports = mongoose.model('Notification', notificationSchema); 

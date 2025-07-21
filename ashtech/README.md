@@ -18,7 +18,7 @@ AshTech is a full-stack MERN application designed as a one-stop solution for web
 
 ```
 ashtech/
-  backend/      # Express.js + MySQL backend API
+  backend/      # Express.js + MongoDB backend API (Mongoose)
     src/
       controllers/
       middleware/
@@ -26,11 +26,8 @@ ashtech/
       routes/
       app.js
       server.js
-      mysql.js
-    config/
-      config.json
+      mongo.js
     uploads/     # Uploaded files (images, etc.)
-    migrations/  # DB migrations (if any)
   frontend/     # React + Vite frontend
     src/
       pages/
@@ -52,7 +49,7 @@ ashtech/
 ### Prerequisites
 - Node.js (v18 or higher recommended)
 - npm (comes with Node.js)
-- MySQL (local or remote)
+- MongoDB (local installation or Atlas account)
 
 ### Backend Setup
 1. **Install dependencies:**
@@ -60,9 +57,12 @@ ashtech/
    cd ashtech/backend
    npm install
    ```
-2. **Configure database:**
-   - Edit `src/mysql.js` or `config/config.json` if your MySQL credentials differ (default: user `root`, password `1234`, db `ashtech`).
-   - Ensure MySQL is running and the `ashtech` database exists.
+2. **Configure MongoDB:**
+   - By default, the backend connects to `mongodb://localhost:27017/ashtech`.
+   - To use a different MongoDB URI (e.g., Atlas), set the `MONGO_URI` environment variable in a `.env` file:
+     ```env
+     MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/ashtech?retryWrites=true&w=majority
+     ```
 3. **Run the backend server:**
    ```bash
    node src/server.js
@@ -88,7 +88,7 @@ ashtech/
 
 ## Configuration
 - **Backend:**
-  - Database: `ashtech` (MySQL, see `src/mysql.js` and `config/config.json`)
+  - Database: MongoDB (see `src/mongo.js`)
   - Environment variables: You can use a `.env` file for sensitive config (see `src/app.js` for usage)
 - **Frontend:**
   - API proxy is set in `vite.config.js` to forward `/api` requests to the backend.

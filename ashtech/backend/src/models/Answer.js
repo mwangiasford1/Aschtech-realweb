@@ -1,17 +1,9 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../mysql');
-const User = require('./User');
+const mongoose = require('mongoose');
 
-const Answer = sequelize.define('Answer', {
-  body: { type: DataTypes.TEXT, allowNull: false },
-  author: { type: DataTypes.INTEGER, allowNull: false }, // user id
-  questionId: { type: DataTypes.INTEGER, allowNull: false }, // foreign key
-  createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-  updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
-}, {
-  timestamps: true
-});
+const answerSchema = new mongoose.Schema({
+  body: { type: String, required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
+}, { timestamps: true });
 
-Answer.belongsTo(User, { foreignKey: 'author', as: 'authorUser' });
-
-module.exports = Answer; 
+module.exports = mongoose.model('Answer', answerSchema); 

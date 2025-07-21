@@ -1,6 +1,4 @@
 const User = require('../models/User');
-const sequelize = require('../mysql');
-const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
@@ -10,12 +8,13 @@ const nodemailer = require('nodemailer');
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    const existingUser = await User.findOne({ where: { [Op.or]: [{ email }, { username }] } });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ username, email, password: hashedPassword });
+    const user = new User({ username, email, password: hashedPassword });
+    await user.save();
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -25,7 +24,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -34,10 +33,10 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     if (user.twoFactorEnabled) {
-      return res.json({ require2FA: true, userId: user.id });
+      return res.json({ require2FA: true, userId: user._id });
     }
-    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
+    res.json({ token, user: { id: user._id, username: user.username, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -47,7 +46,7 @@ exports.login = async (req, res) => {
 exports.verify2FA = async (req, res) => {
   try {
     const { userId, code } = req.body;
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
     if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
       return res.status(400).json({ message: '2FA not enabled for this user' });
     }
@@ -58,8 +57,8 @@ exports.verify2FA = async (req, res) => {
       window: 1
     });
     if (!verified) return res.status(400).json({ message: 'Invalid 2FA code' });
-    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
+    res.json({ token, user: { id: user._id, username: user.username, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ message: '2FA verification failed', error: err.message });
   }
@@ -69,7 +68,7 @@ exports.verify2FA = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(200).json({ message: 'If an account with that email exists, a reset link has been sent.' });
     }
@@ -77,7 +76,7 @@ exports.forgotPassword = async (req, res) => {
     user.passwordResetToken = token;
     user.passwordResetExpires = Date.now() + 1000 * 60 * 15; // 15 minutes
     await user.save();
-    const resetLink = `http://localhost:5173/reset-password?token=${token}&id=${user.id}`;
+    const resetLink = `http://localhost:5173/reset-password?token=${token}&id=${user._id}`;
 
     // Send email with Nodemailer
     const transporter = nodemailer.createTransport({
@@ -101,7 +100,6 @@ exports.forgotPassword = async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    // console.log('Password reset link:', resetLink); // Optionally keep for dev
     res.json({ message: 'If an account with that email exists, a reset link has been sent.' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to send reset email', error: err.message });
@@ -112,7 +110,7 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     const { userId, token, password } = req.body;
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
     if (!user || !user.passwordResetToken || !user.passwordResetExpires) {
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
