@@ -1,7 +1,7 @@
-import axios from 'axios';
+import api from '../config/axios'; 
 
 const instance = axios.create({
-  baseURL: 'https://aschtech-backend.onrender.com', // <-- Use your Render backend URL
+  baseURL: 'https://aschtech-backend.onrender.com', // <-- must be the full backend URL
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
