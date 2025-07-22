@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useSnackbar } from '../context/SnackbarContext.jsx';
@@ -32,13 +32,13 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
+      const res = await api.post('/api/auth/login', { email, password });
       if (res.data.require2FA) {
         setTwoFAUserId(res.data.userId);
         setShow2FA(true);
       } else {
         // Fetch full profile after login
-        const profileRes = await axios.get('/api/users/me', {
+        const profileRes = await api.get('/api/users/me', {
           headers: { Authorization: `Bearer ${res.data.token}` }
         });
         login(profileRes.data, res.data.token);
@@ -56,9 +56,9 @@ export default function Login() {
   const handle2FAVerify = async () => {
     setVerifying2FA(true);
     try {
-      const res = await axios.post('/api/auth/2fa/verify', { userId: twoFAUserId, code: twoFACode });
+      const res = await api.post('/api/auth/2fa/verify', { userId: twoFAUserId, code: twoFACode });
       // Fetch full profile after 2FA login
-      const profileRes = await axios.get('/api/users/me', {
+      const profileRes = await api.get('/api/users/me', {
         headers: { Authorization: `Bearer ${res.data.token}` }
       });
       login(profileRes.data, res.data.token);

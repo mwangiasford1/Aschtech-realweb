@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useContext } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useSnackbar } from '../context/SnackbarContext.jsx';
 import { useSocket } from '../context/SocketContext.jsx';
@@ -97,7 +97,7 @@ function Tutorials() {
       params.append('limit', limit);
       if (searchVal) params.append('search', searchVal);
       if (tagsArr.length > 0) params.append('tags', tagsArr.join(','));
-      const res = await axios.get(`/api/tutorials?${params.toString()}`);
+      const res = await api.get(`/api/tutorials?${params.toString()}`);
       setTutorials(res.data.tutorials);
       setTotal(res.data.total);
     } catch (err) {
@@ -117,7 +117,7 @@ function Tutorials() {
     setMessage('');
     setSubmitting(true);
     try {
-      await axios.post('/api/tutorials', {
+      await api.post('/api/tutorials', {
         ...form,
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
       }, {
@@ -141,7 +141,7 @@ function Tutorials() {
     if (!deleteId) return;
     setDeleting(true);
     try {
-      await axios.delete(`/api/tutorials/${deleteId}`, {
+      await api.delete(`/api/tutorials/${deleteId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       showSnackbar('Tutorial deleted!', 'success');

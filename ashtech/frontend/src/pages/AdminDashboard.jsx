@@ -33,7 +33,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import HistoryIcon from '@mui/icons-material/History';
-import axios from 'axios';
+import api from '../config/axios';
 import { useSocket } from '../context/SocketContext';
 import { useSnackbar } from '../context/SnackbarContext';
 import EditIcon from '@mui/icons-material/Edit';
@@ -134,9 +134,9 @@ export default function AdminDashboard() {
     setAnalyticsLoading(true);
     try {
       const [usersRes, tutorialsRes, questionsRes] = await Promise.all([
-        axios.get('/api/users'),
-        axios.get('/api/tutorials'),
-        axios.get('/api/questions')
+        api.get('/api/users'),
+        api.get('/api/tutorials'),
+        api.get('/api/questions')
       ]);
 
       const usersArr = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data.users || []);
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      const res = await axios.get('/api/users');
+      const res = await api.get('/api/users');
       setUsers(res.data.users || res.data);
     } catch (err) {
       showSnackbar('Failed to load users', 'error');
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
   const fetchTutorials = async () => {
     setTutorialsLoading(true);
     try {
-      const res = await axios.get('/api/tutorials');
+      const res = await api.get('/api/tutorials');
       setTutorials(res.data.tutorials || res.data);
     } catch (err) {
       showSnackbar('Failed to load tutorials', 'error');
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
   const fetchQuestions = async () => {
     setQuestionsLoading(true);
     try {
-      const res = await axios.get('/api/questions');
+      const res = await api.get('/api/questions');
       setQuestions(res.data.questions || res.data);
     } catch (err) {
       showSnackbar('Failed to load questions', 'error');
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
     try {
-      const res = await axios.get('/api/notifications');
+      const res = await api.get('/api/notifications');
       setNotifications(res.data);
     } catch (err) {
       showSnackbar('Failed to load notifications', 'error');
@@ -215,7 +215,7 @@ export default function AdminDashboard() {
   const fetchAuditLogs = async () => {
     setAuditLogsLoading(true);
     try {
-      const res = await axios.get('/api/audit-logs');
+      const res = await api.get('/api/audit-logs');
       setAuditLogs(res.data);
     } catch (err) {
       showSnackbar('Failed to load audit logs', 'error');
@@ -236,13 +236,13 @@ export default function AdminDashboard() {
     try {
       const userId = actionUser._id || actionUser.id;
       if (actionType === 'promote') {
-        await axios.put(`/api/users/${userId}/promote`);
+        await api.put(`/api/users/${userId}/promote`);
         showSnackbar('User promoted to admin!', 'success');
       } else if (actionType === 'demote') {
-        await axios.put(`/api/users/${userId}/demote`);
+        await api.put(`/api/users/${userId}/demote`);
         showSnackbar('User demoted to regular user.', 'success');
       } else if (actionType === 'delete') {
-        await axios.delete(`/api/users/${userId}`);
+        await api.delete(`/api/users/${userId}`);
         showSnackbar('User deleted.', 'success');
       }
       setActionUser(null);
@@ -259,7 +259,7 @@ export default function AdminDashboard() {
     if (!deleteTutorialId) return;
     setTutorialsLoading(true);
     try {
-      await axios.delete(`/api/tutorials/${deleteTutorialId}`);
+      await api.delete(`/api/tutorials/${deleteTutorialId}`);
       showSnackbar('Tutorial deleted!', 'success');
       setDeleteTutorialId(null);
       fetchTutorials();
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
     if (!deleteQuestionId) return;
     setDeletingQuestion(true);
     try {
-      await axios.delete(`/api/questions/${deleteQuestionId}`);
+      await api.delete(`/api/questions/${deleteQuestionId}`);
       showSnackbar('Question deleted!', 'success');
       setDeleteQuestionId(null);
       fetchQuestions();
@@ -314,7 +314,7 @@ export default function AdminDashboard() {
       if (thumbnailFile) {
         formData.append('thumbnail', thumbnailFile);
       }
-      await axios.post('/api/tutorials', formData, {
+      await api.post('/api/tutorials', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       showSnackbar('Tutorial added successfully!', 'success');
@@ -335,7 +335,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     setNotificationSending(true);
     try {
-      await axios.post('/api/notifications', { message: notificationMsg });
+      await api.post('/api/notifications', { message: notificationMsg });
       showSnackbar('Notification sent!', 'success');
       setNotificationMsg('');
       fetchNotifications();
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
     if (!answerText.trim()) return;
     setAnswerSubmitting(true);
     try {
-      await axios.post(`/api/questions/${answerQuestionId}/answers`, { body: answerText });
+      await api.post(`/api/questions/${answerQuestionId}/answers`, { body: answerText });
       showSnackbar('Answer submitted!', 'success');
       handleCloseAnswerDialog();
       fetchQuestions();
@@ -385,7 +385,7 @@ export default function AdminDashboard() {
     if (!editNotifMsg.trim()) return;
     setEditNotifLoading(true);
     try {
-      await axios.put(`/api/notifications/${editNotifId}`, { message: editNotifMsg });
+      await api.put(`/api/notifications/${editNotifId}`, { message: editNotifMsg });
       showSnackbar('Notification updated!', 'success');
       handleCloseEditNotif();
       fetchNotifications();
@@ -399,7 +399,7 @@ export default function AdminDashboard() {
     if (!deleteNotifId) return;
     setDeleteNotifLoading(true);
     try {
-      await axios.delete(`/api/notifications/${deleteNotifId}`);
+      await api.delete(`/api/notifications/${deleteNotifId}`);
       showSnackbar('Notification deleted!', 'success');
       setDeleteNotifId(null);
       fetchNotifications();
@@ -451,7 +451,7 @@ export default function AdminDashboard() {
     setAppointmentsLoading(true);
     setAppointmentsError('');
     try {
-      const res = await axios.get('/api/appointments');
+      const res = await api.get('/api/appointments');
       setAppointments(res.data);
     } catch (err) {
       setAppointmentsError(err.response?.data?.message || 'Failed to load appointments');

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useNotifications } from '../context/NotificationContext.jsx';
-import axios from 'axios';
+import api from '../config/axios';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -40,10 +40,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     // Fetch recent questions
-    axios.get('/api/questions?limit=3')
+    api.get('/api/questions?limit=3')
       .then(res => setRecentQuestions(res.data.questions || []));
     // Fetch recent tutorials
-    axios.get('/api/tutorials?limit=3')
+    api.get('/api/tutorials?limit=3')
       .then(res => setRecentTutorials(res.data.tutorials || []));
   }, []);
 

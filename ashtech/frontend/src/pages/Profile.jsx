@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import axios from 'axios';
+import api from '../config/axios';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
@@ -112,7 +112,7 @@ export default function Profile() {
       await handleEnable2FA();
     } else {
       try {
-        const res = await axios.post('/api/users/me/2fa/disable', {}, {
+        const res = await api.post('/api/users/me/2fa/disable', {}, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setTwoFAEnabled(false);
@@ -132,7 +132,7 @@ export default function Profile() {
 
   const handleEnable2FA = async () => {
     try {
-      const res = await axios.post('/api/users/me/2fa/enable', {}, {
+      const res = await api.post('/api/users/me/2fa/enable', {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setQr(res.data.qr);
@@ -146,7 +146,7 @@ export default function Profile() {
   const handleVerify2FA = async () => {
     setVerifying(true);
     try {
-      const res = await axios.post('/api/users/me/2fa/verify', { code }, {
+      const res = await api.post('/api/users/me/2fa/verify', { code }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSnackbar({ open: true, message: '2FA enabled!', severity: 'success' });
@@ -179,7 +179,7 @@ export default function Profile() {
     if (image) formData.append('profileImage', image);
     if (bannerFile) formData.append('bannerImage', bannerFile);
     try {
-      const res = await axios.put('/api/users/me', formData, {
+      const res = await api.put('/api/users/me', formData, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       console.log('Profile update response:', res.data);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useSnackbar } from '../context/SnackbarContext.jsx';
 import { useSocket } from '../context/SocketContext.jsx';
@@ -80,7 +80,7 @@ function Questions() {
 
   useEffect(() => {
     // Fetch all tags for chips
-    axios.get('/api/questions/tags').then(res => setAllTags(res.data));
+    api.get('/api/questions/tags').then(res => setAllTags(res.data));
   }, []);
 
   const fetchQuestions = async (pageNum = 1, searchVal = '', tagsArr = []) => {
@@ -91,7 +91,7 @@ function Questions() {
       params.append('limit', limit);
       if (searchVal) params.append('search', searchVal);
       if (tagsArr.length > 0) params.append('tags', tagsArr.join(','));
-      const res = await axios.get(`/api/questions?${params.toString()}`);
+      const res = await api.get(`/api/questions?${params.toString()}`);
       setQuestions(res.data.questions);
       setTotal(res.data.total);
     } catch (err) {
@@ -131,7 +131,7 @@ function Questions() {
     setMessage('');
     setSubmitting(true);
     try {
-      await axios.post('/api/questions', {
+      await api.post('/api/questions', {
         ...form,
         tags: form.tags,
       }, {
@@ -155,7 +155,7 @@ function Questions() {
     setMessage('');
     setAnswering(true);
     try {
-      await axios.post(`/api/questions/${id}/answers`, { body: answer }, {
+      await api.post(`/api/questions/${id}/answers`, { body: answer }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setMessage('Answer posted!');
@@ -202,13 +202,13 @@ function Questions() {
     setDeleting(true);
     try {
       if (deleteTarget.type === 'question') {
-        await axios.delete(`/api/questions/${deleteTarget.id}`, {
+        await api.delete(`/api/questions/${deleteTarget.id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         showSnackbar('Question deleted!', 'success');
         setSelected(null);
       } else if (deleteTarget.type === 'answer') {
-        await axios.delete(`/api/questions/${deleteTarget.id}/answers/${deleteTarget.answerId}`, {
+        await api.delete(`/api/questions/${deleteTarget.id}/answers/${deleteTarget.answerId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         showSnackbar('Answer deleted!', 'success');
@@ -250,7 +250,7 @@ function Questions() {
       formData.append('body', form.body);
       form.tags.forEach(tag => formData.append('tags', tag));
       if (imageFile) formData.append('image', imageFile);
-      await axios.post('/api/questions', formData, {
+      await api.post('/api/questions', formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'multipart/form-data',
@@ -276,7 +276,7 @@ function Questions() {
     if (!quickQuestion.trim()) return;
     setQuickSubmitting(true);
     try {
-      await axios.post('/api/questions', {
+      await api.post('/api/questions', {
         title: quickQuestion.slice(0, 40) + (quickQuestion.length > 40 ? '...' : ''),
         body: quickQuestion,
         tags: [],

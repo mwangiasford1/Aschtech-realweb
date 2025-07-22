@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Card, CardContent, Typography, TextField, Button, CircularProgress, Alert } from '@mui/material';
-import axios from 'axios';
+import api from '../config/axios';
 
 export default function BookAppointment() {
   const [form, setForm] = useState({ name: '', email: '', datetime: '', message: '' });
@@ -19,7 +19,7 @@ export default function BookAppointment() {
     setError('');
     setConfirmation('');
     try {
-      const res = await axios.post('/api/appointments', {
+      const res = await api.post('/api/appointments', {
         name: form.name,
         email: form.email,
         datetime: form.datetime,

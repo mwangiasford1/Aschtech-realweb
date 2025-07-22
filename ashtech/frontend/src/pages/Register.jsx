@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from '../context/SnackbarContext.jsx';
 import TextField from '@mui/material/TextField';
@@ -25,7 +25,7 @@ export default function Register() {
     setSuccess('');
     setLoading(true);
     try {
-      await axios.post('/api/auth/register', { username, email, password });
+      await api.post('/api/auth/register', { username, email, password });
       setSuccess('Registration successful! You can now log in.');
       showSnackbar('Registration successful! You can now log in.', 'success');
       setTimeout(() => navigate('/login'), 1500);

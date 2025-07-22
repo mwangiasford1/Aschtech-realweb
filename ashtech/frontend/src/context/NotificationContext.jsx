@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 
 const NotificationContext = createContext();
 
@@ -18,7 +18,7 @@ export function NotificationProvider({ children }) {
 
   // Fetch notifications on mount
   useEffect(() => {
-    axios.get('/api/notifications')
+    api.get('/api/notifications')
       .then(res => {
         setNotifications(res.data);
         setUnread(res.data.length); // Mark all as unread initially

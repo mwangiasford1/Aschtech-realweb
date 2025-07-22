@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useSnackbar } from './SnackbarContext';
 import { useSocket } from './SocketContext';
-import axios from 'axios';
+import api from '../config/axios';
 
 export const AuthContext = createContext();
 
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
       // Always fetch the latest profile on load
-      axios.get('/api/users/me', {
+      api.get('/api/users/me', {
         headers: { Authorization: `Bearer ${storedToken}` }
       }).then(res => {
         setUser(res.data);
