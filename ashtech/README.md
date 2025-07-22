@@ -102,3 +102,8 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ## License
 [MIT](../LICENSE) (or specify your license here) 
+
+## Demo
+
+- **Video Demo:** [Watch on Google Drive](https://drive.google.com/file/d/1kD2KOy1kU40rBPdgf2yis8Jkzs9oeLFH/view?usp=drive_link)
+- **Live Demo:** [https://aschtech-frontend.onrender.com](https://aschtech-frontend.onrender.com) 
