@@ -6,8 +6,19 @@ const path = require('path');
 const app = express();
 
 // Configure CORS
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://aschtech-frontend.onrender.com',
+  process.env.FRONTEND_URL // allow override via env
+].filter(Boolean);
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'], // Allow both dev ports
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
