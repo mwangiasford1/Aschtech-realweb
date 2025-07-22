@@ -1,27 +1,26 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../mysql');
+const mongoose = require('mongoose');
 
-const User = sequelize.define('User', {
-  username: { type: DataTypes.STRING, unique: true, allowNull: false },
-  email: { type: DataTypes.STRING, unique: true, allowNull: false },
-  password: { type: DataTypes.STRING, allowNull: false },
-  role: { type: DataTypes.STRING, defaultValue: 'user' },
-  profileImage: { type: DataTypes.TEXT('long'), allowNull: true },
-  bannerImage: { type: DataTypes.TEXT('long'), allowNull: true },
-  bio: { type: DataTypes.TEXT, allowNull: true },
-  phone: { type: DataTypes.STRING, allowNull: true },
-  location: { type: DataTypes.STRING, allowNull: true },
-  birthday: { type: DataTypes.STRING, allowNull: true },
-  gender: { type: DataTypes.STRING, allowNull: true },
-  github: { type: DataTypes.STRING, allowNull: true },
-  twitter: { type: DataTypes.STRING, allowNull: true },
-  linkedin: { type: DataTypes.STRING, allowNull: true },
-  twoFactorEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },
-  twoFactorSecret: { type: DataTypes.STRING, allowNull: true },
-  passwordResetToken: { type: DataTypes.STRING, allowNull: true },
-  passwordResetExpires: { type: DataTypes.DATE, allowNull: true },
+const userSchema = new mongoose.Schema({
+  username: { type: String, unique: true, required: true },
+  email:    { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+  role:     { type: String, default: 'user' },
+  profileImage: { type: String },
+  bannerImage:  { type: String },
+  bio:     { type: String },
+  phone:   { type: String },
+  location:{ type: String },
+  birthday:{ type: String },
+  gender:  { type: String },
+  github:  { type: String },
+  twitter: { type: String },
+  linkedin:{ type: String },
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecret:  { type: String },
+  passwordResetToken:   { type: String },
+  passwordResetExpires: { type: Date }
 }, {
   timestamps: true
 });
 
-module.exports = User; 
+module.exports = mongoose.model('User', userSchema);
