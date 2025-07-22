@@ -76,7 +76,7 @@ exports.forgotPassword = async (req, res) => {
     user.passwordResetToken = token;
     user.passwordResetExpires = Date.now() + 1000 * 60 * 15; // 15 minutes
     await user.save();
-    const resetLink = `http://localhost:5173/reset-password?token=${token}&id=${user._id}`;
+    const resetLink = `https://aschtech-frontend.onrender.com/reset-password?token=${token}&id=${user._id}`;
 
     // Send email with Nodemailer
     const transporter = nodemailer.createTransport({
