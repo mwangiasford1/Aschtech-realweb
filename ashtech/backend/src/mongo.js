@@ -10,11 +10,8 @@ const connectDB = async (retries = 5, delay = 3000) => {
       return;
     } catch (err) {
       console.error(`❌ MongoDB connection failed (attempt ${i + 1}):`, err.message);
-      if (i === retries - 1) {
-        console.error('🛑 Max retries reached. Exiting...');
-        process.exit(1);
-      }
-      await new Promise(res => setTimeout(res, delay * (i + 1))); // Exponential backoff
+      if (i === retries - 1) process.exit(1);
+      await new Promise(res => setTimeout(res, delay * (i + 1)));
     }
   }
 };
